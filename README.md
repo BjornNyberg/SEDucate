@@ -9,5 +9,5 @@ The SEDucate is an experimental plugin available for QGIS [Create Logs](https://
 2. Open QGIS.
 3. Navigate to Plugins -> Manage and Install Plugins
 4. Select Install from ZIP tab and find the downloaded .zip file from step #1 and press Install Plugin.
-5. Install matplotlib to the python interpretor of QGIS.
+5. Install matplotlib to the python interpreter of QGIS.
 6. The plugin is now ready for testing under the Processing Toolbox. To start - load one of the examples using the provided script.
