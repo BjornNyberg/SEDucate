@@ -47,13 +47,13 @@ class CreateMapLogs(QgsProcessingAlgorithm):
         super().__init__()
 
     def name(self):
-        return "Create Sedimentary Logs"
+        return "1 Create Sedimentary Logs"
 
     def tr(self, text):
         return QCoreApplication.translate("Create Sedimentary Logs", text)
 
     def displayName(self):
-        return self.tr("Create Sedimentary Logs")
+        return self.tr("3. Create Sedimentary Logs")
 
     def group(self):
         return self.tr("Tools")
@@ -79,7 +79,7 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                                                        minValue=1))
 
         param1 = QgsProcessingParameterNumber(self.sections,
-                                                       self.tr('Number of iterations per log'),
+                                                       self.tr('Number of environments per log'),
                                                        QgsProcessingParameterNumber.Integer, 3,
                                                        minValue=1)
         param2 = QgsProcessingParameterNumber(self.probMatrix,
@@ -131,8 +131,6 @@ class CreateMapLogs(QgsProcessingAlgorithm):
 
         if folder == 'TEMPORARY_OUTPUT':
             folder = os.path.join(dirname,'tempfiles')
-            if not os.path.exists(folder):
-                os.mkdir(folder)
 
         fet = QgsFeature()
         fs = QgsFields()
@@ -211,7 +209,7 @@ class CreateMapLogs(QgsProcessingAlgorithm):
         (writer, dest_id) = self.parameterAsSink(parameters, self.output, context, fs, QgsWkbTypes.Point, layer.sourceCrs())
 
         path = os.path.join(dirname, 'environments.csv')  # excel file containing environments
-        environments = np.recfromcsv(path,delimiter=';')
+        environments = np.recfromcsv(path,delimiter=';',encoding='utf-8')
 
         for enum, feature in enumerate(layer3.getFeatures(QgsFeatureRequest())):
             try:
@@ -238,22 +236,15 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                         return {}
                 curEnv = environments[environments['code'] == int(val)]  # Start environment and variables for the sedimentary log
                 outPath = os.path.join(folder,str(enum+1)+'.svg')
-                a = []
+   
                 if enum in outData:
                     v = float(round(outData[enum],2))
-                    r = random.randint(0, 3)
-                    for n in range(r):
-                        value = v-random.randint(-25,25)
-                        if value > 360:
-                            value -360
-                        a.append(value)
-
                 else:
                     v = None
 
-                rows = [enum+1,outPath,curEnv[0][0].decode("utf-8"),v]
+                rows = [enum+1,outPath,str(curEnv[0][1]),v]
 
-                x,y,ystart = [],[],0
+                x,y,s,p,ystart = [],[],{},{},0
                 curEnv = environments[environments['code'] == int(val)]
                 envs = [curEnv]
                 for n in range(sections-1):
@@ -262,12 +253,15 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                     envs.append(curEnv)
 
                 for curEnv in envs[::-1]:
-                    env, code, startvalue, minvalue, maxvalue, thickness, args = curEnv[0]
-                    rx, ry, ystart = plot_grainsize(startvalue, minvalue, maxvalue, thickness, ystart, args)
+                    ID,env, facies, code, startvalue, minvalue, maxvalue, thickness, sorting = curEnv[0]
+                    rx, ry, ystart, curS, curP = plot_grainsize(startvalue, minvalue, maxvalue, thickness, ystart, facies, env, sorting)
                     x += rx
                     y += ry
+                    s.update(curS)
+                    p.update(curP)
 
-                plotting(x, y, len(a), a,'fluvial',outPath,dirname,'')
+                plotting(x, y, v, p,s, outPath,dirname)
+
                 fet.setGeometry(geom)
                 fet.setAttributes(rows)
                 writer.addFeature(fet, QgsFeatureSink.FastInsert)

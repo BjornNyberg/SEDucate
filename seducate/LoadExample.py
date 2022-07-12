@@ -43,7 +43,7 @@ class LoadExample(QgsProcessingAlgorithm):
         return QCoreApplication.translate("Load Example", text)
 
     def displayName(self):
-        return self.tr("Load Example")
+        return self.tr("2. Load Example")
 
     def shortHelpString(self):
         return self.tr('''Load a sedimentary environment map example.\n Use the Help button for more information.''')
@@ -68,7 +68,7 @@ class LoadExample(QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
 
         options = self.examples()
-        self.addParameter(QgsProcessingParameterEnum(self.raster, self.tr("Choose an example..."), options=options.values(), optional=False))
+        self.addParameter(QgsProcessingParameterEnum(self.raster, self.tr("Choose an example..."), options=options.values(), optional=True))
 
         self.addParameter(QgsProcessingParameterBoolean(self.bmap, self.tr("Load Google Satellite Basemap"),False))
 
@@ -78,8 +78,6 @@ class LoadExample(QgsProcessingAlgorithm):
         raster = parameters[self.raster]
         bmap = parameters[self.bmap]
 
-        name = self.examples()[raster]
-
         QgsProject.instance().setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
 
         if bmap == True:
@@ -87,20 +85,22 @@ class LoadExample(QgsProcessingAlgorithm):
             rlayer2 = QgsRasterLayer(urlWithParams, 'Google Satellite', 'wms')
             QgsProject.instance().addMapLayer(rlayer2)
 
-        fname = os.path.join(self.edirname,name)
-        rlayer = QgsRasterLayer(fname, 'example','gdal')
-        QgsProject.instance().addMapLayer(rlayer)
+        if raster !=None:
+            name = self.examples()[raster]
+            fname = os.path.join(self.edirname,name)
+            rlayer = QgsRasterLayer(fname, 'example','gdal')
+            QgsProject.instance().addMapLayer(rlayer)
 
-        path = os.path.join(self.dirname,'templateRaster.qml')
-        rlayer.loadNamedStyle(path)
-        rlayer.triggerRepaint()
+            path = os.path.join(self.dirname,'templateRaster.qml')
+            rlayer.loadNamedStyle(path)
+            rlayer.triggerRepaint()
 
-        extent = rlayer.extent()
-        feedback.pushInfo(QCoreApplication.translate('Update',str(extent)))
-        canvas = iface.mapCanvas()
-        canvas.setExtent(extent)
-        canvas.refresh()
+            extent = rlayer.extent()
+            feedback.pushInfo(QCoreApplication.translate('Update',str(extent)))
+            canvas = iface.mapCanvas()
+            canvas.setExtent(extent)
+            canvas.refresh()
 
-        self.rlayer = rlayer
+            self.rlayer = rlayer
 
         return {}

@@ -24,7 +24,7 @@ from qgis.PyQt.QtCore import QCoreApplication, QVariant
 from qgis.core import *
 import numpy as np
 import pandas as pd
-import os
+import os, random
 from numpy import random as rnd
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
@@ -33,7 +33,8 @@ from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage
 from matplotlib.offsetbox import AnnotationBbox as abb
 
 
-def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, facies='', sorting=''):
+def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, facies='', env='',sorting=''):
+
     y = [0] * (((thickness + 2) * 2))  # Number of values plus start and end value, times two
     y[0] = start_y
     x = [startvalue, startvalue]
@@ -44,7 +45,7 @@ def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, facies=''
     if sorting == 'CU':  # = coarsening upwards
         x.extend([maxvalue, maxvalue])
         x.sort()
-    elif sorting == 'SU':  # shallowing upwards
+    elif sorting == 'FU':  # fining upwards
         x.extend([minvalue, minvalue])
         x.sort()
         x.reverse()
@@ -54,6 +55,13 @@ def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, facies=''
     # Add lines
     x, y = add_lines(x, start_y)
 
+    # Add structures
+    curS = place_structures(x, y, env)
+
+    #Add paleocurrent
+    curP = paleocurrent(curS)
+
+    # Add erosion
     if facies == 'channel':
         x, y = erosion(x, y)
     if facies == 'alluvial':
@@ -63,7 +71,7 @@ def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, facies=''
 
     end_of_y = y[-1]
 
-    return x, y, end_of_y
+    return x, y, end_of_y,curS, curP
 
 
 # ## Function to add lines
@@ -160,14 +168,14 @@ def erosion(x, y, facies=''):  # base is the x-value
 #
 # y = y values
 #
-# facies = used as key find correct structures in the dict
+# env = used as key find correct structures in the dict
 #
 # #### Output
 #
 # Returns a dictionary with y value as key and structure as value
 
 
-def place_structures(x, y, facies, secondfacies=''):
+def place_structures(x, y, env):
 
     struct_dict = {
         'shallowmarine': {0: 'no', 1: 'no', 2: 'hcs', 3: ['no', 'waveripples'], 4: ['ppl', 'crosslamination'],
@@ -179,17 +187,16 @@ def place_structures(x, y, facies, secondfacies=''):
                     6: 'no', 7: 'no'},
         'deepmarine': {0: 'no', 1: ['no'], 2: 'currentripples', 3: 'ppl', 4: ['ppl', 'waveripples'], 5: 'ppl'},
         'lacustrine': {0: 'no', 1: 'no', 2: 'currentripples', 3: ['ppl', 'waveripples'], 4: 'waveripples'},
-        'turbidite': {0: 'no', 1: 'no', 2: 'ppl', 3: 'currentripples', 4: 'ppl', 5: 'no', 6: 'flute'}}
+        'turbidite': {0: 'no', 1: 'no', 2: 'ppl', 3: 'currentripples', 4: 'ppl', 5: 'no', 6: 'flute'},
+        'nodata':{0:'no'}
+                    }
 
     res_dict = {}
 
-    s = struct_dict[facies]
-
-    if secondfacies != '':
-        second_s = struct_dict[secondfacies]
+    s = struct_dict[env]
 
     # Check if facies have erosive base
-    if facies == 'fluvial' or 'alluvial' or 'deepmarine' or 'turbidite':
+    if env == 'fluvial' or 'alluvial' or 'deepmarine' or 'turbidite':
         ytmp = []
         xtmp = []
         # Remove floats from sine wave
@@ -217,51 +224,18 @@ def place_structures(x, y, facies, secondfacies=''):
         x_values = []
         for i in ind:
             x_values.append(xtmp[i])
-
-    elif secondfacies == 'fluvial' or 'alluvial' or 'deepmarine' or 'turbidite':
-        ytmp = []
-        xtmp = []
-        # Remove floats from sine wave
-        for i in range(len(y)):
-            if type(y[i]) == int:
-                ytmp.append(y[i])
-                xtmp.append(x[i])
-
-        # number of structures
-        num = round(len(ytmp) / 3)
-
-        # Get random, evenly distributed indexes
-        ind = np.round(np.linspace(0, len(ytmp) - 1, num)).astype(int)
-
-        # Get values from y from indexes
-        y_values = []
-
-        for i in ind:
-            # if type(y[i])==int:
-            y_values.append(ytmp[i])
-        # Remove duplicates to avoid overlapping structures
-        y_values = list(set(y_values))
-
-        # Get corresponding x values, used in choice of structure
-        x_values = []
-        for i in ind:
-            x_values.append(xtmp[i])
-
     else:
-
         # Number of structures
         num = round(len(y) / 3)
 
         # Get num numbers of evenly spaced indexes from y
         ind = np.round(np.linspace(0, len(y) - 1, num)).astype(int)
-
+    
         # Get values from y from indexes
         y_values = []
         for i in ind:
             # if type(y[i])==int:
             y_values.append(y[i])
-        # Remove duplicates to avoid overlapping structures
-        y_values = list(set(y_values))
 
         # Get corresponding x values, used in choice of structure
         x_values = []
@@ -271,54 +245,20 @@ def place_structures(x, y, facies, secondfacies=''):
     # zip together x and y values
     d = dict(zip(y_values, x_values))
 
-    # If secondfacies are precent, the first half of the structures will be picked from facies, and the second half will be
-    # picked from secondfacies.
-
-    # Obs need to change a bit to be able to have more/less of the log with one of the faciest. Now it only works for 50% with
-    # with the first facies and 50% with the second facies.
-
     for i, j in d.items():
+        if type(j) == int:
+            structures = s[j]
 
-        if secondfacies != '' and i < (max(y_values) + 1) / 2:
-            if type(j) == int:
-                structures = s[j]
-
-                if type(structures) == list:
-                    c = rnd.choice(structures)
-                else:
-                    c = structures
-                res_dict[i + 1] = str(c)
-
-        if secondfacies != '' and i >= (max(y_values) + 1) / 2:
-            if type(j) == int:
-                structures = second_s[j]
-
-                if type(structures) == list:
-                    c = rnd.choice(structures)
-                else:
-                    c = structures
-                res_dict[i + 1] = str(c)
-        else:
-            if type(j) == int:
-                structures = s[j]
-
-                if type(structures) == list:
-                    c = rnd.choice(structures)
-                else:
-                    c = structures
-                res_dict[i + 1] = str(c)
+            if type(structures) == list:
+                c = rnd.choice(structures)
+            else:
+                c = structures
+            res_dict[i + 1] = str(c)
 
     # removing duplictate lag and flute structures since they normally just appear at the bottom of a layer
     res_dict1 = {}
 
     for key, value in res_dict.items():
-        #         if value == 'lag' and value[key-1] == 'lag':
-        #             continue
-        #         elif value == 'flute' and value[key-1] == 'flute':
-        #             continue
-        #         else:
-        #             res_dict1[key]=value
-
         if value == 'lag' and value not in res_dict1.values():
             res_dict1[key] = value
         elif value == 'flute' and value not in res_dict1.values():
@@ -336,7 +276,7 @@ def place_structures(x, y, facies, secondfacies=''):
 
 def lithology(x, y):
 
-    lith_dict = {1: 'mud', 2: 'silt', 3: 'sand', 4: 'sand', 5: 'sand', 6: 'sand', 7: 'sand'}
+    lith_dict = {0:'none', 1: 'mud', 2: 'silt', 3: 'sand', 4: 'sand', 5: 'sand', 6: 'sand', 7: 'sand'}
 
     res_dict = {}
     # Get only unique y-values
@@ -350,31 +290,27 @@ def lithology(x, y):
     return res_dict
 
 
-def paleocurrent(x, y, num_arrows):
+def paleocurrent(s_dict):
+    '''
+    Dictionary containing the different types of paleocurrent images (e.g. unidirectional or bidirectional).
+    Only allow paleocurrent measurements based on specific sedimentary structures.
+    '''
+    paleo_dict = {
+        'crosslamination': 'directional',
+        'currentripples': 'directional'
+                  }
+
     res_dict = {}
 
-    # removing decimal numbers from y (from sinus wave function)
-    y_values = [int(x) for x in y]
-
-    # Get only unique y-values
-    y_values = set(y_values)
-
-    # Number of arrows
-    num = num_arrows
-
-    # Get num numbers of evenly spaced indexes from y
-    ind = np.round(np.linspace(0, len(y_values) - 1, num)).astype(int)
-
-    for i in ind:
-        res_dict[i] = 'arrow'
+    for k,v in s_dict.items():
+        if v in paleo_dict:
+            res_dict[k] = paleo_dict[v]
 
     # Changing the first key from 0 to 2 so the arrow wont overlap the bottom border of the plot.
-    res_dict = {2 if k == 0 else k: v for k, v in res_dict.items()}
+    res_dict = {2 if k < 3 else k: v for k, v in res_dict.items()}
 
     return res_dict
 
-def convert_angle(angle):
-    return [ -i for i in angle ]
 
 # ## Plotting function
 # Function to generate the actual log and plot everything.
@@ -385,10 +321,10 @@ def convert_angle(angle):
 #
 # y = y values to plot grain size graph
 #
-# facies = to use as input in place_structures to get a dict with structures
+# envs = to use as input in place_structures to get a dict with structures
 
 
-def plotting(x, y, num_arrows, angle, facies, outPath,dname,secondfacies=''):
+def plotting(x, y, angle, pc_dict, s_dict, outPath,dname):
 
     fig = plt.figure(figsize=(8, 10))
     gs = fig.add_gridspec(5, 5, wspace=0)
@@ -397,8 +333,8 @@ def plotting(x, y, num_arrows, angle, facies, outPath,dname,secondfacies=''):
     ax3 = fig.add_subplot(gs[:, -1])
     ax2.plot(x, y, color='black')
 
-    labels = ['', 'Mud', 'Si', 'Vf', 'F', 'M', 'C', 'Vc']
-    plt.setp([ax1, ax2, ax3], yticks=[], xticks=[0, 1, 2, 3, 4, 5, 6, 7], xticklabels=labels)
+    labels = ['', 'Mud', 'Si', 'Vf', 'F', 'M', 'C', 'Vc','']
+    plt.setp([ax1, ax2, ax3], yticks=[], xticks=[0, 1, 2, 3, 4, 5, 6, 7, 8], xticklabels=labels)
     ax1.set(xticks=[])
     ax3.set(xticks=[])
     ax3.title.set_text('Structures')
@@ -409,37 +345,32 @@ def plotting(x, y, num_arrows, angle, facies, outPath,dname,secondfacies=''):
     ax2.set_ylim(-1, max(y) + 3)
     ax1.set_ylim(-1, max(y) + 3)
 
-    s_dict = place_structures(x, y, facies, secondfacies)
     l_dict = lithology(x, y)
-    pc_dict = paleocurrent(x, y, num_arrows)
-    angle = convert_angle(angle)
-    k = 0
-
-    # removing floats from x list so arrows can be placed at either left or right side depending on the grain size.
-    x1 = [i for i in x if isinstance(i, int)]
 
     for i, j in s_dict.items():
         image = mpimg.imread(os.path.join(dname,'structures', str(j) + '.jpg'))
         imagebox = OffsetImage(image, zoom=0.5)
-        ab = abb(imagebox, (3.45, i), frameon=False)  # Placing the figure
+        ab = abb(imagebox, (3.85, i), frameon=False)  # Placing the figure
         ax3.add_artist(ab)
 
     for i, j in l_dict.items():
-        image = mpimg.imread(os.path.join(dname,'lithology', str(j) + '.jpg'))
-        imagebox = OffsetImage(image, zoom=0.082)
-        ab = abb(imagebox, (3.5, i), frameon=False)  # Placing the figure
-        ax1.add_artist(ab)
-
-    for i, j in pc_dict.items():
-        image = Image.open(os.path.join(dname,'paleocurrent', str(j) + '.jpg'))
-        rotated = image.rotate(angle[k], expand=True, fillcolor='white')
-        imagebox = OffsetImage(rotated, zoom=0.03, )
-        # placing the arrow on the left side if grainsize > 5.5 or on the right side if grainsize is smaller.
-        if x1[i] >= 5.5:
-            ab = abb(imagebox, (0.3, i), frameon=False)  # Placing the figure
-        else:
-            ab = abb(imagebox, (6.3, i), frameon=False)  # Placing the figure
-        ax2.add_artist(ab)
-        k += 1
+        try:
+            image = mpimg.imread(os.path.join(dname,'lithology', str(j) + '.jpg'))
+            imagebox = OffsetImage(image, zoom=0.082)
+            ab = abb(imagebox, (4.07, i), frameon=False)  # Placing the figure
+            ax1.add_artist(ab)
+        except Exception:
+            continue
+    if angle:
+        for i, j in pc_dict.items():
+            if random.random() > 0.5: #Plot 50% of paleocurrents
+                image = Image.open(os.path.join(dname, 'paleocurrent', str(j) + '.jpg'))
+                value = angle - random.randint(-25, 25)
+                if value > 360:
+                    value =- 360
+                rotated = image.rotate(-value, expand=True, fillcolor='white')
+                imagebox = OffsetImage(rotated, zoom=0.03, )
+                ab = abb(imagebox, (7.3, i), frameon=False)  # Placing the figure
+                ax2.add_artist(ab)
 
     plt.savefig(outPath,format='svg')

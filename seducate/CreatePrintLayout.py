@@ -40,7 +40,7 @@ class CreatePrintLayout(QgsProcessingAlgorithm):
         return QCoreApplication.translate("Print Layout Template", text)
 
     def displayName(self):
-        return self.tr("Print Layout Template")
+        return self.tr("4. Print Layout Template")
 
     def group(self):
         return self.tr("Tools")
@@ -74,12 +74,9 @@ class CreatePrintLayout(QgsProcessingAlgorithm):
 
         map = QgsLayoutItemMap(layout)
         map.setFrameEnabled(True)
-        # I have no idea what this does, but it is necessary
         map.setRect(20, 20, 20, 20)
 
         # Set Map Extent
-        # defines map extent using map coordinates
-        #canvas = iface.mapCanvas()
         extent = extent.split(' ')[0].split(',')
         rect = QgsRectangle(float(extent[0]),float(extent[2]),float(extent[1]),float(extent[3]))
         map.setExtent(rect)
@@ -103,7 +100,8 @@ class CreatePrintLayout(QgsProcessingAlgorithm):
         scale.setSegmentSizeMode(1)
         scale.setMinimumBarWidth(10)
         scale.setMaximumBarWidth(70)
-        scale.setUnitLabel('m')
+        scale.setUnitLabel('km')
+        scale.setUnits(QgsUnitTypes.DistanceKilometers)
         scale.attemptMove(QgsLayoutPoint(10, 195, QgsUnitTypes.LayoutMillimeters))
         layout.addLayoutItem(scale)
 

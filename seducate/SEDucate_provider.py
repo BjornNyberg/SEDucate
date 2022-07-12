@@ -24,7 +24,7 @@
 
 __author__ = 'Bjorn Nyberg, Sigrid Næsheim, Henk Keers'
 __date__ = '2021-11-03'
-__copyright__ = '(C) 2021 by Bjorn Nyberg, Sigrid Næsheim, Henk Keers'
+__copyright__ = '(C) 2021 by Bjorn Nyberg, Lisbeth Vedå, Sigrid Næsheim, Henk Keers'
 
 # This will get replaced with a git SHA1 when you do a git archive
 
@@ -35,6 +35,7 @@ from qgis.core import QgsProcessingProvider
 from .CreateMapLogs import CreateMapLogs
 from .CreatePrintLayout import CreatePrintLayout
 from .LoadExample import LoadExample
+from .configureSeducate import configureSeducate
 
 
 class SEDucateProvider(QgsProcessingProvider):
@@ -59,6 +60,7 @@ class SEDucateProvider(QgsProcessingProvider):
         self.addAlgorithm(CreateMapLogs())
         self.addAlgorithm(CreatePrintLayout())
         self.addAlgorithm(LoadExample())
+        self.addAlgorithm(configureSeducate())
 
         # add additional algorithms here
         # self.addAlgorithm(MyOtherAlgorithm())
