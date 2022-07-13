@@ -208,8 +208,10 @@ class CreateMapLogs(QgsProcessingAlgorithm):
 
         (writer, dest_id) = self.parameterAsSink(parameters, self.output, context, fs, QgsWkbTypes.Point, layer.sourceCrs())
 
-        path = os.path.join(dirname, 'environments.csv')  # excel file containing environments
+        path = os.path.join(dirname, 'environments.csv')  # csv file containing environments
+        path2 = os.path.join(dirname, 'structures.csv')  # csv file containing sedimentary structures
         environments = np.recfromcsv(path,delimiter=';',encoding='utf-8')
+        structures = np.recfromcsv(path2,delimiter=';',encoding='utf-8')
 
         for enum, feature in enumerate(layer3.getFeatures(QgsFeatureRequest())):
             try:
@@ -253,8 +255,13 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                     envs.append(curEnv)
 
                 for curEnv in envs[::-1]:
-                    ID,env, facies, code, startvalue, minvalue, maxvalue, thickness, sorting = curEnv[0]
-                    rx, ry, ystart, curS, curP = plot_grainsize(startvalue, minvalue, maxvalue, thickness, ystart, facies, env, sorting)
+                    ID,env, code, startvalue, minvalue, maxvalue, thickness, sorting, contact = curEnv[0]
+                    if env in structures['environment']:
+                        ss = structures[structures['environment'] == env]
+                        ssList = dict(zip(range(0,8),list(ss[0])[2:])) #Sedimentary structures list
+                    else:
+                        ssList = dict(zip(range(0, 8), ['no']*8))  # No sedimentary structures list available in structures.csv file
+                    rx, ry, ystart, curS, curP = plot_grainsize(startvalue, minvalue, maxvalue, thickness, ystart, sorting,contact,ssList)
                     x += rx
                     y += ry
                     s.update(curS)

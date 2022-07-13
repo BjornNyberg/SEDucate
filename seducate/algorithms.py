@@ -32,8 +32,7 @@ from PIL import Image
 from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage
 from matplotlib.offsetbox import AnnotationBbox as abb
 
-
-def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, facies='', env='',sorting=''):
+def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, sorting='',contact='',structures=''):
 
     y = [0] * (((thickness + 2) * 2))  # Number of values plus start and end value, times two
     y[0] = start_y
@@ -56,18 +55,14 @@ def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, facies=''
     x, y = add_lines(x, start_y)
 
     # Add structures
-    curS = place_structures(x, y, env)
+    curS = place_structures(x, y, structures)
 
-    #Add paleocurrent
+    #Add paleocurrent based on sedimentary structures
     curP = paleocurrent(curS)
 
     # Add erosion
-    if facies == 'channel':
-        x, y = erosion(x, y)
-    if facies == 'alluvial':
-        x, y = erosion(x, y, 'alluvial')
-    if facies == 'turbidite':
-        x, y = erosion(x, y, 'turbidite')
+    if contact == 'erosional':
+        x, y = erosion(x, y,maxvalue)
 
     end_of_y = y[-1]
 
@@ -123,22 +118,16 @@ def add_lines(x, start_y):
 #
 # y = y values
 #
-# facies (optional) = decides where to place the erosive base
+# m (optional) = decides where to place the erosive base
 #
 # #### Output
 # X and y values
 
 
-def erosion(x, y, facies=''):  # base is the x-value
+def erosion(x, y, m):  # base is the x-value
 
-    if facies == 'alluvial':
-        # locate grain size 7 in x
-        i = x.index(7)
-    elif facies == 'turbidite':
-        # locate grain size 6 in x
-        i = x.index(6)
-    else:
-        i = x.index(5)
+    # locate grain size at max value in x
+    i = x.index(m)
 
     truncated_x = x[:i + 1]  # truncate log based on erosion
     truncated_y = y[:i + 1]
@@ -159,7 +148,7 @@ def erosion(x, y, facies=''):  # base is the x-value
 
 
 # ## Function to place sedimentary structures
-# This function generates a dictionary with evenly spaced and random y values for placement in the log and which structure to place there based on the x value in the grain size graph and the current facies.
+# This function generates a dictionary with evenly spaced and random y values for placement in the log and which structure to place there based on the x value in the grain size graph and the current env.
 #
 #
 # #### Input
@@ -168,91 +157,72 @@ def erosion(x, y, facies=''):  # base is the x-value
 #
 # y = y values
 #
-# env = used as key find correct structures in the dict
+# s = sedimentary structures dictionary
 #
 # #### Output
 #
 # Returns a dictionary with y value as key and structure as value
 
 
-def place_structures(x, y, env):
-
-    struct_dict = {
-        'shallowmarine': {0: 'no', 1: 'no', 2: 'hcs', 3: ['no', 'waveripples'], 4: ['ppl', 'crosslamination'],
-                          5: 'ppl'},
-        'alluvial': {0: 'no', 1: 'no', 2: 'no', 3: 'no', 4: 'no', 5: 'no', 6: 'no', 7: 'no'},
-        'eolian': {0: 'no', 4: ['no', 'roots'], 5: 'crosslamination'},
-        'fluvial': {0: 'no', 1: ['no', 'roots', 'coal', 'plant'], 2: 'no',
-                    3: ['ppl', 'crosslamination', 'currentripples', 'flute'], 4: ['crosslamination', 'flute'], 5: 'lag',
-                    6: 'no', 7: 'no'},
-        'deepmarine': {0: 'no', 1: ['no'], 2: 'currentripples', 3: 'ppl', 4: ['ppl', 'waveripples'], 5: 'ppl'},
-        'lacustrine': {0: 'no', 1: 'no', 2: 'currentripples', 3: ['ppl', 'waveripples'], 4: 'waveripples'},
-        'turbidite': {0: 'no', 1: 'no', 2: 'ppl', 3: 'currentripples', 4: 'ppl', 5: 'no', 6: 'flute'},
-        'nodata':{0:'no'}
-                    }
+def place_structures(x, y, s):
 
     res_dict = {}
 
-    s = struct_dict[env]
 
-    # Check if facies have erosive base
-    if env == 'fluvial' or 'alluvial' or 'deepmarine' or 'turbidite':
-        ytmp = []
-        xtmp = []
-        # Remove floats from sine wave
-        for i in range(len(y)):
-            if type(y[i]) == int:
-                ytmp.append(y[i])
-                xtmp.append(x[i])
+    # Check if env have erosive base
+    # if env == 'fluvial' or 'alluvial' or 'deepmarine' or 'turbidite':
+    #     ytmp = []
+    #     xtmp = []
+    #     # Remove floats from sine wave
+    #     for i in range(len(y)):
+    #         if type(y[i]) == int:
+    #             ytmp.append(y[i])
+    #             xtmp.append(x[i])
 
-        # number of structures
-        num = round(len(ytmp) / 3)
+    #     # number of structures
+    #     num = round(len(ytmp) / 3)
 
-        # Get random, evenly distributed indexes
-        ind = np.round(np.linspace(0, len(ytmp) - 1, num)).astype(int)
+    #     # Get random, evenly distributed indexes
+    #     ind = np.round(np.linspace(0, len(ytmp) - 1, num)).astype(int)
 
-        # Get values from y from indexes
-        y_values = []
+    #     # Get values from y from indexes
+    #     y_values = []
 
-        for i in ind:
-            # if type(y[i])==int:
-            y_values.append(ytmp[i])
-        # Remove duplicates to avoid overlapping structures
-        y_values = list(set(y_values))
+    #     for i in ind:
+    #         # if type(y[i])==int:
+    #         y_values.append(ytmp[i])
+    #     # Remove duplicates to avoid overlapping structures
+    #     y_values = list(set(y_values))
 
-        # Get corresponding x values, used in choice of structure
-        x_values = []
-        for i in ind:
-            x_values.append(xtmp[i])
-    else:
-        # Number of structures
-        num = round(len(y) / 3)
+    #     # Get corresponding x values, used in choice of structure
+    #     x_values = []
+    #     for i in ind:
+    #         x_values.append(xtmp[i])
+    # else:
+    # Number of structures
+    num = round(len(y) / 3)
 
-        # Get num numbers of evenly spaced indexes from y
-        ind = np.round(np.linspace(0, len(y) - 1, num)).astype(int)
-    
-        # Get values from y from indexes
-        y_values = []
-        for i in ind:
-            # if type(y[i])==int:
-            y_values.append(y[i])
+    # Get num numbers of evenly spaced indexes from y
+    ind = np.round(np.linspace(0, len(y) - 1, num)).astype(int)
 
-        # Get corresponding x values, used in choice of structure
-        x_values = []
-        for i in ind:
-            x_values.append(x[i])
+    # Get values from y from indexes
+    y_values = []
+    for i in ind:
+        # if type(y[i])==int:
+        y_values.append(y[i])
+
+    # Get corresponding x values, used in choice of structure
+    x_values = []
+    for i in ind:
+        x_values.append(x[i])
 
     # zip together x and y values
     d = dict(zip(y_values, x_values))
 
     for i, j in d.items():
         if type(j) == int:
-            structures = s[j]
-
-            if type(structures) == list:
-                c = rnd.choice(structures)
-            else:
-                c = structures
+            structures = s[j].split(',')
+            c = rnd.choice(structures)
             res_dict[i + 1] = str(c)
 
     # removing duplictate lag and flute structures since they normally just appear at the bottom of a layer

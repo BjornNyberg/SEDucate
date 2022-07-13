@@ -1,0 +1,10 @@
+﻿ID;environment;0;1;2;3;4;5;6;7
+1;alluvial fan;no;no;no;no;no;no;no;no
+2;channel;no;no,roots,coal,plant;no;ppl,crosslamination,currentripples,flute;crosslamination,flute;lag;no;no
+3;floodplain;no;no,roots,coal,plant;no;ppl,crosslamination,currentripples,flute;crosslamination,flute;lag;no;no
+4;lacustrine;no;no;currentripples;ppl,waveripples;waveripples;no;no;no
+5;eolian;no;no;no;no;no,roots;crosslamination;no;no
+6;shoreface;no;no;hcs;no,waveripples;ppl,crosslamination;ppl;no;no
+7;deep marine;no;no;no;no;no;no;no;no
+8;turbidite;no;no;ppl;currentripples;ppl;no;flute;no
+9;nodata;no;no;no;no;no;no;no;no
