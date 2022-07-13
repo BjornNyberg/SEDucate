@@ -318,7 +318,10 @@ def plotting(x, y, angle, pc_dict, s_dict, outPath,dname):
     l_dict = lithology(x, y)
 
     for i, j in s_dict.items():
-        image = mpimg.imread(os.path.join(dname,'structures', str(j) + '.jpg'))
+        if j != '':
+            image = mpimg.imread(os.path.join(dname,'structures', str(j) + '.jpg'))
+        else:
+            image = mpimg.imread(os.path.join(dname, 'structures','no.jpg'))
         imagebox = OffsetImage(image, zoom=0.5)
         ab = abb(imagebox, (3.85, i), frameon=False)  # Placing the figure
         ax3.add_artist(ab)
@@ -343,4 +346,4 @@ def plotting(x, y, angle, pc_dict, s_dict, outPath,dname):
                 ab = abb(imagebox, (7.3, i), frameon=False)  # Placing the figure
                 ax2.add_artist(ab)
 
-    plt.savefig(outPath,format='svg')
+    plt.savefig(outPath,format='jpg')

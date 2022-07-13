@@ -36,6 +36,8 @@ from .CreateMapLogs import CreateMapLogs
 from .CreatePrintLayout import CreatePrintLayout
 from .LoadExample import LoadExample
 from .configureSeducate import configureSeducate
+from .CreateEnvironment import CreateEnvironment
+from .DeleteEnvironment import DeleteEnvironment
 
 
 class SEDucateProvider(QgsProcessingProvider):
@@ -61,6 +63,8 @@ class SEDucateProvider(QgsProcessingProvider):
         self.addAlgorithm(CreatePrintLayout())
         self.addAlgorithm(LoadExample())
         self.addAlgorithm(configureSeducate())
+        self.addAlgorithm(CreateEnvironment())
+        self.addAlgorithm(DeleteEnvironment())
 
         # add additional algorithms here
         # self.addAlgorithm(MyOtherAlgorithm())

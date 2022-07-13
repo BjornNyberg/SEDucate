@@ -1,6 +1,6 @@
 ﻿ID;environment;0;1;2;3;4;5;6;7
 1;alluvial fan;no;no;no;no;no;no;no;no
-2;channel;no;no,roots,coal,plant;no;ppl,crosslamination,currentripples,flute;crosslamination,flute;lag;no;no
+2;channel belt;no;no,roots,coal,plant;no;ppl,crosslamination,currentripples,flute;crosslamination,flute;lag;no;no
 3;floodplain;no;no,roots,coal,plant;no;ppl,crosslamination,currentripples,flute;crosslamination,flute;lag;no;no
 4;lacustrine;no;no;currentripples;ppl,waveripples;waveripples;no;no;no
 5;eolian;no;no;no;no;no,roots;crosslamination;no;no

@@ -237,7 +237,7 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                         feedback.reportError(QCoreApplication.translate('Error','Rater value {} is not defined as an environment. Please check and edit the environments.csv file located in the SEDucate plugin directory.'.format(int(val))))
                         return {}
                 curEnv = environments[environments['code'] == int(val)]  # Start environment and variables for the sedimentary log
-                outPath = os.path.join(folder,str(enum+1)+'.svg')
+                outPath = os.path.join(folder,str(enum+1)+'.jpg')
    
                 if enum in outData:
                     v = float(round(outData[enum],2))
