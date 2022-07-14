@@ -158,6 +158,21 @@ class CreateEnvironment(QgsProcessingAlgorithm):
         str6 = [sNames[s] for s in parameters[self.str6]]
         str7 = [sNames[s] for s in parameters[self.str7]]
 
+        if len(str1) == 0:
+            str1 = ['no']
+        if len(str2) == 0:
+            str2 = ['no']
+        if len(str3) == 0:
+            str3 = ['no']
+        if len(str4) == 0:
+            str4 = ['no']
+        if len(str5) == 0:
+            str5 = ['no']
+        if len(str6) == 0:
+            str6 = ['no']
+        if len(str7) == 0:
+            str7 = ['no']
+
         dirname = os.path.dirname(__file__)  # directory to scripts
         path = os.path.join(dirname, 'environments.csv')  # excel file containing environments
         environments = np.recfromcsv(path, delimiter=';', encoding='utf-8')
@@ -187,7 +202,7 @@ class CreateEnvironment(QgsProcessingAlgorithm):
         path2 = os.path.join(dirname, 'structures.csv')  # excel file containing environments
         structures = np.recfromcsv(path2, delimiter=';', encoding='utf-8')
 
-        data2 = [code, name, ','.join(str1),','.join(str2),','.join(str3),','.join(str4),','.join(str5),','.join(str6),','.join(str7)]
+        data2 = [code, name, 'no',','.join(str1),','.join(str2),','.join(str3),','.join(str4),','.join(str5),','.join(str6),','.join(str7)]
 
         with open(path2, "a") as output:
             text = ';'.join(data2) + '\n'

@@ -25,6 +25,7 @@ from qgis.core import *
 import processing as st
 import os, random, math
 import numpy as np
+from PIL import Image
 from osgeo import gdal,osr
 from .algorithms import plot_grainsize,plotting,add_lines
 from qgis.utils import iface
@@ -213,6 +214,7 @@ class CreateMapLogs(QgsProcessingAlgorithm):
         environments = np.recfromcsv(path,delimiter=';',encoding='utf-8')
         structures = np.recfromcsv(path2,delimiter=';',encoding='utf-8')
 
+        paths = []
         for enum, feature in enumerate(layer3.getFeatures(QgsFeatureRequest())):
             try:
                 geom = feature.geometry().centroid()
@@ -238,7 +240,8 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                         return {}
                 curEnv = environments[environments['code'] == int(val)]  # Start environment and variables for the sedimentary log
                 outPath = os.path.join(folder,str(enum+1)+'.jpg')
-   
+                paths.append(outPath)
+
                 if enum in outData:
                     v = float(round(outData[enum],2))
                 else:
@@ -275,6 +278,19 @@ class CreateMapLogs(QgsProcessingAlgorithm):
 
             except Exception as e:
                 feedback.reportError(QCoreApplication.translate('Node Error', '%s' % (e)))
+
+        for i in range(0,len(paths),5):
+            images = [Image.open(x) for x in paths[i:i+5]]
+            widths, heights = zip(*(i.size for i in images))
+            total_width = 800*len(images)
+            max_height = 1000
+            new_im = Image.new('RGB', (total_width, max_height))
+            outPath = os.path.join(folder, 'logs_'+str(i)+'_'+str(i+5) + '.jpg')
+            x_offset = 0
+            for im in images:
+                new_im.paste(im, (x_offset, 0))
+                x_offset += im.size[0]
+            new_im.save(outPath)
 
         self.dest_id = dest_id
 
