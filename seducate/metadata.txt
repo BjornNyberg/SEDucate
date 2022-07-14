@@ -12,7 +12,7 @@ email=bjorn.nyberg@uib.no
 
 about = A set of sedimentology course curriculum exercises. 
 
-tracker=https://github.com/BjornNyberg/SEDucate
+tracker=https://github.com/BjornNyberg/SEDucate/issues
 repository=https://github.com/BjornNyberg/SEDucate
 # End of mandatory metadata
 
@@ -23,7 +23,7 @@ hasProcessingProvider=yes
 #changelog=
 
 # Tags are comma separated with spaces allowed
-tags=sedimentology, logs, data
+tags=sedimentology, logs, depositional environments
 
 homepage=https://github.com/BjornNyberg/SEDucate/wiki
 category=Vector
