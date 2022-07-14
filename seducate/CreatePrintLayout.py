@@ -49,7 +49,7 @@ class CreatePrintLayout(QgsProcessingAlgorithm):
         return self.tr('''Create a print layout template for map excerices based on a desired extent. Find the resulting print layout under Project -> layouts. \n Use the Help button for more information.''')
 
     def helpUrl(self):
-        return "https://github.com/BjornNyberg/SEDucate"
+        return "https://github.com/BjornNyberg/SEDucate/wiki"
 
     def createInstance(self):
         return type(self)()

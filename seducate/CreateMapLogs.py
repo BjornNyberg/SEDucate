@@ -63,7 +63,7 @@ class CreateMapLogs(QgsProcessingAlgorithm):
         return self.tr('''Create sedimentary logs based on a sedimentary environments map. The user may select the number of random sedimentary logs to create or provide a point vector layer. \n Use the Help button for more information.''')
 
     def helpUrl(self):
-        return "https://github.com/BjornNyberg/SEDucate"
+        return "https://github.com/BjornNyberg/SEDucate/wiki"
 
     def createInstance(self):
         return type(self)()

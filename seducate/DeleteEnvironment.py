@@ -53,7 +53,7 @@ class DeleteEnvironment(QgsProcessingAlgorithm):
         return self.tr('''Delete an existing sedimentary environment or facies log sequence.\n Use the Help button for more information.''')
 
     def helpUrl(self):
-        return "https://github.com/BjornNyberg/SEDucate"
+        return "https://github.com/BjornNyberg/SEDucate/wiki"
 
     def createInstance(self):
         return type(self)()

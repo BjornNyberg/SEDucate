@@ -5,12 +5,12 @@
 [general]
 name=SEDucate
 qgisMinimumVersion=3.4
-description= A set of tools for creating and teaching sedimentary log excerices based on modern depositional environments
+description= A set of tools for creating and teaching the analysis of sedimentary logs based on modern depositional environments.
 version=0.1
-author=Bjorn Nyberg, Sigrid Næsheim, Henk Keers
+author=Bjorn Nyberg, Lisbeth Vedå, Sigrid Næsheim, Henk Keers
 email=bjorn.nyberg@uib.no
 
-about = A set of sedimentology course curriculum excerices. 
+about = A set of sedimentology course curriculum exercises. 
 
 tracker=https://github.com/BjornNyberg/SEDucate
 repository=https://github.com/BjornNyberg/SEDucate
@@ -25,7 +25,7 @@ hasProcessingProvider=yes
 # Tags are comma separated with spaces allowed
 tags=sedimentology, logs, data
 
-homepage=https://github.com/BjornNyberg/SEDucate
+homepage=https://github.com/BjornNyberg/SEDucate/wiki
 category=Vector
 icon=icon.png
 # experimental flag
