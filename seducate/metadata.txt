@@ -5,9 +5,9 @@
 [general]
 name=SEDucate
 qgisMinimumVersion=3.4
-description= A set of tools for creating and teaching the analysis of sedimentary logs based on modern depositional environments.
+description= A set of tools for creating sedimentary logs based on modern depositional environments.
 version=0.1
-author=Bjorn Nyberg, Lisbeth Vedå, Sigrid Næsheim, Henk Keers
+author=Bjorn Nyberg
 email=bjorn.nyberg@uib.no
 
 about = A set of sedimentology course curriculum exercises. 
