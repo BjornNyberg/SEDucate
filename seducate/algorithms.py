@@ -314,6 +314,7 @@ def plotting(x, y, angle, pc_dict, s_dict, outPath,dname):
     ax3.set_ylim(-1, max(y) + 3)
     ax2.set_ylim(-1, max(y) + 3)
     ax1.set_ylim(-1, max(y) + 3)
+    fig.suptitle('Log #{l}'.format(l=os.path.basename(outPath)), fontsize=20)
 
     l_dict = lithology(x, y)
 
