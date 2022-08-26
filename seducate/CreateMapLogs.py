@@ -132,6 +132,8 @@ class CreateMapLogs(QgsProcessingAlgorithm):
 
         if folder == 'TEMPORARY_OUTPUT':
             folder = os.path.join(dirname,'tempfiles')
+            if not os.path.exists(folder):
+                os.mkdir(folder)
 
         fet = QgsFeature()
         fs = QgsFields()
