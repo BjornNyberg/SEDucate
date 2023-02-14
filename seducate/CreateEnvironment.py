@@ -41,6 +41,9 @@ class CreateEnvironment(QgsProcessingAlgorithm):
     str5 = 'str5'
     str6 = 'str6'
     str7 = 'str7'
+    str8 = 'str8'
+    str9 = 'str9'
+    str10 = 'str10'
 
     def __init__(self):
         super().__init__()
@@ -100,25 +103,34 @@ class CreateEnvironment(QgsProcessingAlgorithm):
         options = self.structures()
 
         param1 = QgsProcessingParameterEnum(self.str1,
-                                            self.tr('Mud Grainsize Structures'),
+                                            self.tr('Clay Grain Size Structures'),
                                             options=options, allowMultiple=True, optional=True)
         param2 = QgsProcessingParameterEnum(self.str2,
-                                            self.tr('Silt Grainsize Structures'),
+                                            self.tr('Silt Grain Size Structures'),
                                             options=options, allowMultiple=True, optional=True)
         param3 = QgsProcessingParameterEnum(self.str3,
-                                            self.tr('V. Fine Grainsize Structures'),
+                                            self.tr('V. Fine Grain Size Structures'),
                                             options=options, allowMultiple=True, optional=True)
         param4 = QgsProcessingParameterEnum(self.str4,
-                                            self.tr('Fine Grainsize Structures'),
+                                            self.tr('Fine Grains Size Structures'),
                                             options=options, allowMultiple=True, optional=True)
         param5 = QgsProcessingParameterEnum(self.str5,
-                                            self.tr('Medium Grainsize Structures'),
+                                            self.tr('Medium Grain Size Structures'),
                                             options=options, allowMultiple=True, optional=True)
         param6 = QgsProcessingParameterEnum(self.str6,
-                                            self.tr('Coarse Grainsize Structures'),
+                                            self.tr('Coarse Grain Size Structures'),
                                             options=options, allowMultiple=True, optional=True)
         param7 = QgsProcessingParameterEnum(self.str7,
-                                            self.tr('V. Coarse Grainsize Structures'),
+                                            self.tr('V. Coarse Grain Size Structures'),
+                                            options=options, allowMultiple=True, optional=True)
+        param8 = QgsProcessingParameterEnum(self.str8,
+                                            self.tr('Granule Grain Size Structures'),
+                                            options=options, allowMultiple=True, optional=True)
+        param9 = QgsProcessingParameterEnum(self.str9,
+                                            self.tr('Pebble Grain Size Structures'),
+                                            options=options, allowMultiple=True, optional=True)
+        param10 = QgsProcessingParameterEnum(self.str10,
+                                            self.tr('Cobble Grain Size Structures'),
                                             options=options, allowMultiple=True, optional=True)
 
         param1.setFlags(param1.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
@@ -128,6 +140,9 @@ class CreateEnvironment(QgsProcessingAlgorithm):
         param5.setFlags(param5.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         param6.setFlags(param6.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         param7.setFlags(param7.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        param8.setFlags(param8.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        param9.setFlags(param9.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        param10.setFlags(param10.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
         self.addParameter(param1)
         self.addParameter(param2)
@@ -136,6 +151,9 @@ class CreateEnvironment(QgsProcessingAlgorithm):
         self.addParameter(param5)
         self.addParameter(param6)
         self.addParameter(param7)
+        self.addParameter(param8)
+        self.addParameter(param9)
+        self.addParameter(param10)
 
     def processAlgorithm(self, parameters, context, feedback):
 
@@ -157,6 +175,9 @@ class CreateEnvironment(QgsProcessingAlgorithm):
         str5 = [sNames[s] for s in parameters[self.str5]]
         str6 = [sNames[s] for s in parameters[self.str6]]
         str7 = [sNames[s] for s in parameters[self.str7]]
+        str8 = [sNames[s] for s in parameters[self.str8]]
+        str9 = [sNames[s] for s in parameters[self.str9]]
+        str10 = [sNames[s] for s in parameters[self.str10]]
 
         if len(str1) == 0:
             str1 = ['no']
@@ -172,6 +193,12 @@ class CreateEnvironment(QgsProcessingAlgorithm):
             str6 = ['no']
         if len(str7) == 0:
             str7 = ['no']
+        if len(str8) == 0:
+            str8 = ['no']
+        if len(str9) == 0:
+            str9 = ['no']
+        if len(str10) == 0:
+            str10 = ['no']
 
         dirname = os.path.dirname(__file__)  # directory to scripts
         path = os.path.join(dirname, 'environments.csv')  # excel file containing environments
@@ -202,7 +229,7 @@ class CreateEnvironment(QgsProcessingAlgorithm):
         path2 = os.path.join(dirname, 'structures.csv')  # excel file containing environments
         structures = np.recfromcsv(path2, delimiter=';', encoding='utf-8')
 
-        data2 = [code, name, 'no',','.join(str1),','.join(str2),','.join(str3),','.join(str4),','.join(str5),','.join(str6),','.join(str7)]
+        data2 = [code, name, 'no',','.join(str1),','.join(str2),','.join(str3),','.join(str4),','.join(str5),','.join(str6),','.join(str7),','.join(str8),','.join(str9),','.join(str10)]
 
         with open(path2, "a") as output:
             text = ';'.join(data2) + '\n'
