@@ -251,7 +251,7 @@ class CreateMapLogs(QgsProcessingAlgorithm):
 
                 rows = [enum+1,outPath,str(curEnv[0][1]),v]
 
-                x,y,s,p,ystart = [],[],{},{},0
+                x,y,s,p,l,ystart = [],[],{},{},{},0
                 curEnv = environments[environments['code'] == int(val)]
                 envs = [curEnv]
                 for n in range(sections-1):
@@ -266,13 +266,14 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                         ssList = dict(zip(range(0,8),list(ss[0])[2:])) #Sedimentary structures list
                     else:
                         ssList = dict(zip(range(0, 8), ['no']*8))  # No sedimentary structures list available in structures.csv file
-                    rx, ry, ystart, curS, curP = plot_grainsize(startvalue, minvalue, maxvalue, thickness, ystart, sorting,contact,ssList)
+                    rx, ry, ystart, curS, curP,l_dict = plot_grainsize(startvalue, minvalue, maxvalue, thickness, ystart, sorting,contact,ssList)
                     x += rx
                     y += ry
                     s.update(curS)
                     p.update(curP)
+                    l.update(l_dict)
 
-                plotting(x, y, v, p,s, outPath,dirname)
+                plotting(x, y, v, p,s,l, outPath,dirname)
 
                 fet.setGeometry(geom)
                 fet.setAttributes(rows)

@@ -33,14 +33,14 @@ from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage
 from matplotlib.offsetbox import AnnotationBbox as abb
 
 def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, sorting='',contact='',structures=''):
-
-    y = [0] * (((thickness + 2) * 2))  # Number of values plus start and end value, times two
+    nBeds = 3 # Number of y points representing beds
+    y = [0] * (((nBeds + 2) * 2))  # Number of values plus start and end value, times two
     y[0] = start_y
     x = [startvalue, startvalue]
-    for i in range(thickness):
-        # Append value times thickness to result list to get blocky look on graph
+    for i in range(nBeds):
+        # Append value times nBeds to result list to get blocky look on graph
         value = rnd.randint(minvalue, maxvalue + 1)  # Could have uniform here, to pick float
-        x.extend([value] * thickness)
+        x.extend([value] * nBeds)
     if sorting == 'CU':  # = coarsening upwards
         x.extend([maxvalue, maxvalue])
         x.sort()
@@ -52,7 +52,7 @@ def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, sorting='
         x.extend([minvalue, minvalue])
 
     # Add lines
-    x, y = add_lines(x, start_y)
+    x, y = add_lines(x, start_y,thickness)
 
     # Add structures
     curS = place_structures(x, y, structures)
@@ -60,13 +60,14 @@ def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, sorting='
     #Add paleocurrent based on sedimentary structures
     curP = paleocurrent(curS)
 
+    l_dict = lithology(x, y)
     # Add erosion
     if contact == 'erosional':
         x, y = erosion(x, y,maxvalue)
 
     end_of_y = y[-1]
 
-    return x, y, end_of_y,curS, curP
+    return x, y, end_of_y,curS, curP,l_dict
 
 
 # ## Function to add lines
@@ -82,7 +83,7 @@ def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, sorting='
 # X and y values
 
 
-def add_lines(x, start_y):
+def add_lines(x, start_y,thickness):
     res_x = []
     for i in range(len(x) - 1):
 
@@ -101,7 +102,7 @@ def add_lines(x, start_y):
 
 
         elif res_x[i] == res_x[i + 1]:
-            res_y.append(res_y[i] + 1)
+            res_y.append(res_y[i] + thickness)
 
         else:
             res_y.append(res_y[i])
@@ -233,7 +234,7 @@ def place_structures(x, y, s):
             res_dict1[key] = value
         elif value == 'flute' and value not in res_dict1.values():
             res_dict1[key] = value
-        if value == 'lag' or value == 'flute':
+        if value in ['lag','flute','no']:
             continue
         else:
             res_dict1[key] = value
@@ -246,23 +247,22 @@ def place_structures(x, y, s):
 
 def lithology(x, y):
 
-    lith_dict = {0:'none', 1: 'mud', 2: 'silt', 3: 'sand', 4: 'sand', 5: 'sand', 6: 'sand', 7: 'sand'}
+    lith_dict = {0:'none', 1: 'clay', 2: 'silt', 3: 'sand', 4: 'sand', 5: 'sand', 6: 'sand', 7: 'sand',8:'cong',9:'cong',10:'cong'}
 
     res_dict = {}
     # Get only unique y-values
     y_values = set(y)
 
     for i in y_values:
-        if type(i) == int:
-            x_value = x[y.index(i)]
-            res_dict[i] = lith_dict[x_value]
+        x_value = x[y.index(i)]
+        res_dict[i] = lith_dict[x_value]
 
     return res_dict
 
 
 def paleocurrent(s_dict):
     '''
-    Dictionary containing the different types of paleocurrent images (e.g. unidirectional or bidirectional).
+    Dictionary containing the different types of paleocurrent images (e.g. directional or bidirectional).
     Only allow paleocurrent measurements based on specific sedimentary structures.
     '''
     paleo_dict = {
@@ -294,7 +294,7 @@ def paleocurrent(s_dict):
 # envs = to use as input in place_structures to get a dict with structures
 
 
-def plotting(x, y, angle, pc_dict, s_dict, outPath,dname):
+def plotting(x, y, angle, pc_dict, s_dict, l_dict, outPath,dname):
 
     fig = plt.figure(figsize=(8, 10))
     gs = fig.add_gridspec(5, 5, wspace=0)
@@ -303,8 +303,8 @@ def plotting(x, y, angle, pc_dict, s_dict, outPath,dname):
     ax3 = fig.add_subplot(gs[:, -1])
     ax2.plot(x, y, color='black')
 
-    labels = ['', 'Mud', 'Si', 'Vf', 'F', 'M', 'C', 'Vc','']
-    plt.setp([ax1, ax2, ax3], yticks=[], xticks=[0, 1, 2, 3, 4, 5, 6, 7, 8], xticklabels=labels)
+    labels = ['', 'Clay', 'Si', 'Vf', 'F', 'M', 'C', 'Vc','Gran','Peb','Cob']
+    plt.setp([ax1, ax2, ax3], yticks=[], xticks=[0, 1, 2, 3, 4, 5, 6, 7, 8,9,10,11], xticklabels=labels)
     ax1.set(xticks=[])
     ax3.set(xticks=[])
     ax3.title.set_text('Structures')
@@ -316,22 +316,20 @@ def plotting(x, y, angle, pc_dict, s_dict, outPath,dname):
     ax1.set_ylim(-1, max(y) + 3)
     fig.suptitle('Log #{l}'.format(l=os.path.basename(outPath)[:-4]), fontsize=20)
 
-    l_dict = lithology(x, y)
-
     for i, j in s_dict.items():
         if j != '':
             image = mpimg.imread(os.path.join(dname,'structures', str(j) + '.jpg'))
         else:
             image = mpimg.imread(os.path.join(dname, 'structures','no.jpg'))
         imagebox = OffsetImage(image, zoom=0.5)
-        ab = abb(imagebox, (3.85, i), frameon=False)  # Placing the figure
+        ab = abb(imagebox, (5.5, i), frameon=False)  # Placing the figure
         ax3.add_artist(ab)
 
     for i, j in l_dict.items():
         try:
             image = mpimg.imread(os.path.join(dname,'lithology', str(j) + '.jpg'))
             imagebox = OffsetImage(image, zoom=0.082)
-            ab = abb(imagebox, (4.07, i), frameon=False)  # Placing the figure
+            ab = abb(imagebox, (5.5, i), frameon=False)  # Placing the figure
             ax1.add_artist(ab)
         except Exception:
             continue
