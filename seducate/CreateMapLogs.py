@@ -41,6 +41,9 @@ class CreateMapLogs(QgsProcessingAlgorithm):
     probMatrix = 'probMatrix'
     dis = 'distance'
     extent = 'extent'
+    svg = 'svg'
+    nBeds = 'nBeds'
+    nSedS = 'nSedS'
     folder = 'folder'
     output = 'output'
 
@@ -91,20 +94,35 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                                                        self.tr('Minimum distance between logs (map units)'),
                                                        QgsProcessingParameterNumber.Double, 0,
                                                        minValue=0)
-        param4 = QgsProcessingParameterExtent(self.extent, self.tr("Extent of random logs"),optional=True)
-        param5 = QgsProcessingParameterRasterLayer(self.raster2, self.tr("Current direction map"), None, True)
+        param4 =  QgsProcessingParameterNumber(self.nBeds,
+                                                       self.tr('Number of beds per environment'),
+                                                       QgsProcessingParameterNumber.Integer, 3,
+                                                       minValue=1)
+        param5 =  QgsProcessingParameterNumber(self.nSedS,
+                                                       self.tr('Number of sedimentary structures per environment'),
+                                                       QgsProcessingParameterNumber.Integer, 5,
+                                                       minValue=0)
+        param6 = QgsProcessingParameterExtent(self.extent, self.tr("Extent of random logs"),optional=True)
+        param7 = QgsProcessingParameterRasterLayer(self.raster2, self.tr("Current direction map"), None, True)
 
         param1.setFlags(param1.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         param2.setFlags(param2.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         param3.setFlags(param3.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         param4.setFlags(param4.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
         param5.setFlags(param5.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        param6.setFlags(param6.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
+        param7.setFlags(param7.flags() | QgsProcessingParameterDefinition.FlagAdvanced)
 
         self.addParameter(param1)
         self.addParameter(param2)
         self.addParameter(param3)
         self.addParameter(param4)
         self.addParameter(param5)
+        self.addParameter(param6)
+        self.addParameter(param7)
+
+        self.addParameter(QgsProcessingParameterBoolean(self.svg,
+                                self.tr("SVG file"),False))
 
         self.addParameter(QgsProcessingParameterFolderDestination(
             self.folder,
@@ -125,8 +143,20 @@ class CreateMapLogs(QgsProcessingAlgorithm):
         logs = parameters[self.logs]
         probMatrix = parameters[self.probMatrix]
         dis = parameters[self.dis]
+        nBeds = parameters[self.nBeds]
+        nSedS = parameters[self.nSedS]
         extent = parameters[self.extent]
         folder = parameters[self.folder]
+        svg = parameters[self.svg]
+
+        if svg:
+            ext = '.svg'
+        else:
+            ext = '.jpg'
+
+        if nBeds*sections < 5:
+            feedback.reportError(
+                QCoreApplication.translate('Warning', 'Warning: Number of sedimentary log environments * number of beds is less than 5. Consider increasing to correctly display lithology.'))
 
         dirname = os.path.dirname(__file__)  # directory to scripts
 
@@ -241,7 +271,7 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                         feedback.reportError(QCoreApplication.translate('Error','Rater value {} is not defined as an environment. Please check and edit the environments.csv file located in the SEDucate plugin directory.'.format(int(val))))
                         return {}
                 curEnv = environments[environments['code'] == int(val)]  # Start environment and variables for the sedimentary log
-                outPath = os.path.join(folder,str(enum+1)+'.jpg')
+                outPath = os.path.join(folder,str(enum+1)+ext)
                 paths.append(outPath)
 
                 if enum in outData:
@@ -263,10 +293,10 @@ class CreateMapLogs(QgsProcessingAlgorithm):
                     ID,env, code, startvalue, minvalue, maxvalue, thickness, sorting, contact = curEnv[0]
                     if env in structures['environment']:
                         ss = structures[structures['environment'] == env]
-                        ssList = dict(zip(range(0,8),list(ss[0])[2:])) #Sedimentary structures list
+                        ssList = dict(zip(range(0,11),list(ss[0])[2:])) #Sedimentary structures list
                     else:
-                        ssList = dict(zip(range(0, 8), ['no']*8))  # No sedimentary structures list available in structures.csv file
-                    rx, ry, ystart, curS, curP,l_dict = plot_grainsize(startvalue, minvalue, maxvalue, thickness, ystart, sorting,contact,ssList)
+                        ssList = dict(zip(range(0, 11), ['no']*11))  # No sedimentary structures list available in structures.csv file
+                    rx, ry, ystart, curS, curP,l_dict = plot_grainsize(startvalue, minvalue, maxvalue, thickness, ystart, sorting,contact,ssList,nBeds,nSedS)
                     x += rx
                     y += ry
                     s.update(curS)
@@ -281,19 +311,19 @@ class CreateMapLogs(QgsProcessingAlgorithm):
 
             except Exception as e:
                 feedback.reportError(QCoreApplication.translate('Node Error', '%s' % (e)))
-
-        for i in range(0,len(paths),5):
-            images = [Image.open(x) for x in paths[i:i+5]]
-            widths, heights = zip(*(i.size for i in images))
-            total_width = 800*len(images)
-            max_height = 1000
-            new_im = Image.new('RGB', (total_width, max_height))
-            outPath = os.path.join(folder, 'logs_'+str(i)+'_'+str(i+5) + '.jpg')
-            x_offset = 0
-            for im in images:
-                new_im.paste(im, (x_offset, 0))
-                x_offset += im.size[0]
-            new_im.save(outPath)
+        if svg == False:
+            for i in range(0,len(paths),5):
+                images = [Image.open(x) for x in paths[i:i+5]]
+                widths, heights = zip(*(i.size for i in images))
+                total_width = 800*len(images)
+                max_height = 1000
+                new_im = Image.new('RGB', (total_width, max_height))
+                outPath = os.path.join(folder, 'logs_'+str(i)+'_'+str(i+5) + '.jpg')
+                x_offset = 0
+                for im in images:
+                    new_im.paste(im, (x_offset, 0))
+                    x_offset += im.size[0]
+                new_im.save(outPath)
 
         self.dest_id = dest_id
 

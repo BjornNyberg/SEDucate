@@ -83,15 +83,15 @@ class CreateEnvironment(QgsProcessingAlgorithm):
                                                        'Name'))
         self.addParameter(QgsProcessingParameterEnum(self.startV,
                                                      self.tr('Start Grainsize'),
-                                                     options=[self.tr('mud'),self.tr('silt'),self.tr('v. fine'),self.tr('fine'),self.tr('medium'),self.tr('coarse'),self.tr('v. coarse')], defaultValue=0))
+                                                     options=[self.tr('mud'),self.tr('silt'),self.tr('v. fine'),self.tr('fine'),self.tr('medium'),self.tr('coarse'),self.tr('v. coarse'),self.tr('Granule'),self.tr('Pebble'),self.tr('Cobble')], defaultValue=0))
         self.addParameter(QgsProcessingParameterEnum(self.minV,
                                                      self.tr('Min Grainsize'),
-                                                     options=[self.tr('mud'),self.tr('silt'),self.tr('v. fine'),self.tr('fine'),self.tr('medium'),self.tr('coarse'),self.tr('v. coarse')], defaultValue=0))
+                                                     options=[self.tr('mud'),self.tr('silt'),self.tr('v. fine'),self.tr('fine'),self.tr('medium'),self.tr('coarse'),self.tr('v. coarse'),self.tr('Granule'),self.tr('Pebble'),self.tr('Cobble')], defaultValue=0))
         self.addParameter(QgsProcessingParameterEnum(self.maxV,
                                                      self.tr('Max Grainsize'),
-                                                     options=[self.tr('mud'),self.tr('silt'),self.tr('v. fine'),self.tr('fine'),self.tr('medium'),self.tr('coarse'),self.tr('v. coarse')], defaultValue=0))
+                                                     options=[self.tr('mud'),self.tr('silt'),self.tr('v. fine'),self.tr('fine'),self.tr('medium'),self.tr('coarse'),self.tr('v. coarse'),self.tr('Granule'),self.tr('Pebble'),self.tr('Cobble')], defaultValue=0))
         self.addParameter(QgsProcessingParameterNumber(self.thickness,
-                                                       self.tr('Thickness'), QgsProcessingParameterNumber.Integer, 3,
+                                                       self.tr('Thickness Ratio'), QgsProcessingParameterNumber.Integer, 3,
                                                        minValue=1,maxValue=5))
         self.addParameter(QgsProcessingParameterEnum(self.trend,
                                                      self.tr('Trend'),

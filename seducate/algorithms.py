@@ -32,8 +32,7 @@ from PIL import Image
 from matplotlib.offsetbox import TextArea, DrawingArea, OffsetImage
 from matplotlib.offsetbox import AnnotationBbox as abb
 
-def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, sorting='',contact='',structures=''):
-    nBeds = 3 # Number of y points representing beds
+def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, sorting='',contact='',structures='',nBeds=3,nSedS=5):
     y = [0] * (((nBeds + 2) * 2))  # Number of values plus start and end value, times two
     y[0] = start_y
     x = [startvalue, startvalue]
@@ -55,14 +54,14 @@ def plot_grainsize(startvalue, minvalue, maxvalue, thickness, start_y, sorting='
     x, y = add_lines(x, start_y,thickness)
 
     # Add structures
-    curS = place_structures(x, y, structures)
+    curS = place_structures(x, y, structures,nSedS)
 
     #Add paleocurrent based on sedimentary structures
     curP = paleocurrent(curS)
 
     l_dict = lithology(x, y)
     # Add erosion
-    if contact == 'erosional':
+    if contact.lower() == 'erosional':
         x, y = erosion(x, y,maxvalue)
 
     end_of_y = y[-1]
@@ -165,7 +164,7 @@ def erosion(x, y, m):  # base is the x-value
 # Returns a dictionary with y value as key and structure as value
 
 
-def place_structures(x, y, s):
+def place_structures(x, y, s, nS):
 
     res_dict = {}
 
@@ -201,7 +200,7 @@ def place_structures(x, y, s):
     #         x_values.append(xtmp[i])
     # else:
     # Number of structures
-    num = round(len(y) / 3)
+    num = nS#round(len(y) / 3)
 
     # Get num numbers of evenly spaced indexes from y
     ind = np.round(np.linspace(0, len(y) - 1, num)).astype(int)
@@ -303,12 +302,12 @@ def plotting(x, y, angle, pc_dict, s_dict, l_dict, outPath,dname):
     ax3 = fig.add_subplot(gs[:, -1])
     ax2.plot(x, y, color='black')
 
-    labels = ['', 'Clay', 'Si', 'Vf', 'F', 'M', 'C', 'Vc','Gran','Peb','Cob']
+    labels = ['', 'Clay', 'Si', 'Vf', 'F', 'M', 'C', 'Vc','Gran','Peb','Cob','']
     plt.setp([ax1, ax2, ax3], yticks=[], xticks=[0, 1, 2, 3, 4, 5, 6, 7, 8,9,10,11], xticklabels=labels)
     ax1.set(xticks=[])
     ax3.set(xticks=[])
     ax3.title.set_text('Structures')
-    ax2.title.set_text('Grainsize graph')
+    ax2.title.set_text('Grain Size Graph')
     ax1.title.set_text('Lithology')
 
     ax3.set_ylim(-1, max(y) + 3)
@@ -333,6 +332,7 @@ def plotting(x, y, angle, pc_dict, s_dict, l_dict, outPath,dname):
             ax1.add_artist(ab)
         except Exception:
             continue
+
     if angle:
         for i, j in pc_dict.items():
             if random.random() > 0.5: #Plot 50% of paleocurrents
@@ -342,7 +342,7 @@ def plotting(x, y, angle, pc_dict, s_dict, l_dict, outPath,dname):
                     value =- 360
                 rotated = image.rotate(-value, expand=True, fillcolor='white')
                 imagebox = OffsetImage(rotated, zoom=0.03, )
-                ab = abb(imagebox, (7.3, i), frameon=False)  # Placing the figure
+                ab = abb(imagebox, (10.3, i), frameon=False)  # Placing the figure
                 ax2.add_artist(ab)
 
     plt.savefig(outPath,format='jpg')
