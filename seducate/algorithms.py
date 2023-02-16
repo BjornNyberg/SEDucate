@@ -344,5 +344,7 @@ def plotting(x, y, angle, pc_dict, s_dict, l_dict, outPath,dname):
                 imagebox = OffsetImage(rotated, zoom=0.03, )
                 ab = abb(imagebox, (10.3, i), frameon=False)  # Placing the figure
                 ax2.add_artist(ab)
-
-    plt.savefig(outPath,format='jpg')
+    if '.svg' in outPath:
+        plt.savefig(outPath, format='svg')
+    else:
+        plt.savefig(outPath,format='jpg')
