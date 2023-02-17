@@ -266,7 +266,8 @@ def paleocurrent(s_dict):
     '''
     paleo_dict = {
         'crosslamination': 'directional',
-        'currentripples': 'directional'
+        'currentripples': 'directional',
+        'mud drapes':'bidirectional'
                   }
 
     res_dict = {}
@@ -307,7 +308,7 @@ def plotting(x, y, angle, pc_dict, s_dict, l_dict, outPath,dname):
     ax1.set(xticks=[])
     ax3.set(xticks=[])
     ax3.title.set_text('Structures')
-    ax2.title.set_text('Grain Size Graph')
+    ax2.title.set_text('Grain Size')
     ax1.title.set_text('Lithology')
 
     ax3.set_ylim(-1, max(y) + 3)
